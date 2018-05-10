@@ -11,6 +11,13 @@ def compare_file(f):
         num = int(matchobj.group(1))
         # print(num)
     return num
+def compare_file_seek(f):
+    matchobj = re.match("wskey_seek_value(\w*)", f, flags=0)
+    num = 0
+    if matchobj:
+        num = int(matchobj.group(1))
+        # print(num)
+    return num
 
 def print_data(data,name):
     print(name)
@@ -22,6 +29,7 @@ def deal_ws_data(path,isseek):
     files = os.listdir(path)
     files.sort(key=compare_file)
     if isseek == "isseek":
+        files.sort(key=compare_file_seek)
         seekrandom1=[]
         seekrandom2=[]
         for file in files:
@@ -34,20 +42,24 @@ def deal_ws_data(path,isseek):
                     # print(matchobj.group, ..., sep=' ', end='\n', file=sys.stdout)
                     data = matchobj.group(2);
                     if i == False:
-                        seekdata1.append(data)
+                        seekrandom1.append(data)
                         i = True
                     else:
-                        seekdata2.append(data)
-        print(seekdata1)
-        print(seekdata2)
+                        seekrandom2.append(data)
+        print_data(seekrandom1,"seekrandom1")
+        print_data(seekrandom2,"seekrandom2")
     else:
         fillseq=[]
+        fillseq_bandwidth=[]
         fillrandom=[]
+        fillrandom_bandwidth=[]
         readrandom1=[]
         readseq1=[]
+        readseq1_bandwidth=[]
         compact=[]
         readrandom2=[]
         readseq2=[]
+        readseq2_bandwidth=[]
         for file in files:
             # print(file)
             if os.path.isfile(path +"/"+file):
@@ -56,14 +68,20 @@ def deal_ws_data(path,isseek):
                 i = False
                 j = False
                 for line in iter_f:
-                    matchobj = re.match("(fillseq\s*:)\s*(\w*.\w*)\smicros/op;", line, flags=0)
+                    matchobj = re.match("(fillseq\s*:)\s*(\w*.\w*)\smicros/op;\s*(\w*.\w*)\sMB/s", line, flags=0)
                     if matchobj:
-                        data = matchobj.group(2);
-                        fillseq.append(data)
-                    matchobj = re.match("(fillrandom\s*:)\s*(\w*.\w*)\smicros/op;", line, flags=0)
+                        # print(matchobj.group())
+                        data2 = matchobj.group(2);
+                        fillseq.append(data2)
+                        data3 = matchobj.group(3);
+                        fillseq_bandwidth.append(data3)
+                    matchobj = re.match("(fillrandom\s*:)\s*(\w*.\w*)\smicros/op;\s*(\w*.\w*)\sMB/s", line, flags=0)
                     if matchobj:
-                        data = matchobj.group(2);
-                        fillrandom.append(data)
+                        # print(matchobj.group())
+                        data2 = matchobj.group(2);
+                        fillrandom.append(data2)
+                        data3 = matchobj.group(3);
+                        fillrandom_bandwidth.append(data3)
                     matchobj = re.match("(readrandom\s*:)\s*(\w*.\w*)\smicros/op;", line, flags=0)
                     if matchobj:
                         data = matchobj.group(2);
@@ -72,25 +90,33 @@ def deal_ws_data(path,isseek):
                             i = True
                         else:
                             readrandom2.append(data)
-                    matchobj = re.match("(readseq\s*:)\s*(\w*.\w*)\smicros/op;", line, flags=0)
+                    matchobj = re.match("(readseq\s*:)\s*(\w*.\w*)\smicros/op;\s*(\w*.\w*)\sMB/s", line, flags=0)
                     if matchobj:
-                        data = matchobj.group(2);
+                        # print(matchobj.group())
+                        data2 = matchobj.group(2);
+                        data3 = matchobj.group(3);
                         if j == False:
-                            readseq1.append(data)
+                            readseq1.append(data2)
+                            readseq1_bandwidth.append(data3)
                             j = True
                         else:
-                            readseq2.append(data)
+                            readseq2.append(data2)
+                            readseq2_bandwidth.append(data3)
                     matchobj = re.match("(compact\s*:)\s*(\w*.\w*)\smicros/op;", line, flags=0)
                     if matchobj:
                         data = matchobj.group(2);
                         compact.append(data)
         print_data(fillseq,"fillseq")
+        print_data(fillseq_bandwidth,"fillseq_bandwidth")
         print_data(fillrandom,"fillrandom")
+        print_data(fillrandom_bandwidth,"fillrandom_bandwidth")
         print_data(readrandom1,"readrandom1")
         print_data(readseq1,"readseq1")
+        print_data(readseq1_bandwidth,"readseq1_bandwidth")
         print_data(compact,"compact")
         print_data(readrandom2,"readrandom2")
         print_data(readseq2,"readseq2")
+        print_data(readseq2_bandwidth,"readseq2_bandwidth")
 
 
 
